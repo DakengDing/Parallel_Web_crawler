@@ -10,6 +10,8 @@ Q1. Run the web crawler using the configurations located at src/main/config/writ
     the ParallelWebCrawler.
 
     Why did the parser take more time when run with ParallelWebCrawler?
+    When webcrawler doing parallelism, there are more URL parser need to visit which need to creat more thread and need
+    more waiting time. e.g. the sequential result URL visited is 3 but the parallel result is 35, it is 10 times increasing.
 
 
 Q2. Your manager ran your crawler on her old personal computer, using the configurations from Q1, and she notices that
@@ -17,16 +19,25 @@ Q2. Your manager ran your crawler on her old personal computer, using the config
 
     (a) Suggest one reason why the sequential web crawler was able to read more web pages than the parallel crawler.
         (Hint: Try setting "parallelism" to 1 in the JSON configs to simulate your manager's computer.)
+        It may because the memory allocation limitation problem, each thread call their own stack in the memory. When
+        old computer do not have enough memory to support the all the thread, the thread need to wait the memory address
+         is free for them to use.(this may also because her computer OS is not 64-bit, there is no enough memory address
+         for multiple thread.)
 
     (b) Suggest one scenario in which the parallel web crawler will almost certainly perform better than the sequential
         crawler. Why will it perform better?
+        When the parallel web crawler running on a high performance server or high-memory server, the parallel web crawller
+        will certainly perfom better than the sequential crawller. the reason is that the server have multi-core CPU and large size
+        memory will maximum the number of threads and each threads will have enough system results to handle the data.
 
 
 Q3. Analyze your method profiler through the lens of Aspect Oriented Programming, by answering the following questions:
 
     (a) What cross-cutting concern is being addressed by the com.udacity.webcrawler.profiler.Profiler class?
+    Performance profiling.
 
     (b) What are the join points of the Profiler in the web crawler program?
+    Methods with profiled annotation.
 
 
 Q4. Identify three (3) different design patterns used in this project, and explain which interfaces, classes, and/or
@@ -34,5 +45,17 @@ Q4. Identify three (3) different design patterns used in this project, and expla
 
     For each pattern, name one thing about the pattern that you LIKED, and one thing you DISLIKED. If you did not like
     anything, you can name two things you disliked.
+    Singleton Pattern, this pattern only involves with one class and this class only handle single object and provide one
+    way to access the only object.
+    Like: low system resource usage.
+    Dislike: no interface, hard to connect with other instance.
+
+    Builder Pattern, this pattern will build a complex object from many single objects.
+    Like: each build step is flexible.
+    Dislike: all objects have to internal connections.
+
+    Proxy pattern, this pattern will modify the interface function to fit some situations.
+    Like: client will not direct use the origin class.
+    Dislike: coding this is difficult.
 
 
