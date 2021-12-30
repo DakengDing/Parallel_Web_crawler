@@ -23,37 +23,47 @@ final class ProfilingMethodInterceptor implements InvocationHandler {
   // TODO: You will need to add more instance fields and constructor arguments to this class.
   ProfilingMethodInterceptor(Clock clock, Object delegate, ZonedDateTime startTime, ProfilingState state) {
     this.clock = Objects.requireNonNull(clock);
-    this.delegate = delegate;
-    this.startTime = startTime;
-    this.state = state;
+    this.delegate = Objects.requireNonNull(delegate);
+    this.startTime = Objects.requireNonNull(startTime);
+    this.state = Objects.requireNonNull(state);
 
   }
 
     //public <T> ProfilingMethodInterceptor(Clock clock, T delegate, ZonedDateTime startTime, ProfilingState state) {
 
     //}
+    private boolean isMethodProfiled(Method method) {
+        return method.getAnnotation(Profiled.class) != null;
+    }
 
     @Override
-  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
-    // TODO: This method interceptor should inspect the called method to see if it is a profiled
-    //       method. For profiled methods, the interceptor should record the start time, then
-    //       invoke the method using the object that is being profiled. Finally, for profiled
-    //       methods, the interceptor should record how long the method call took, using the
-    //       ProfilingState methods.
-      Object object;
-      Instant startT = null;
-      if (method.getAnnotation(Profiled.class)!=null){
-        startT = clock.instant();
-        try {
-          object = method.invoke(delegate,args);
-        }catch (InvocationTargetException ex){
-          throw ex.getTargetException();
-        }finally {
-          Duration duration = Duration.between(startT, clock.instant());
-          state.record(delegate.getClass(),method,duration);
-        }
-      }
-      return method.invoke(delegate,args);
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        // TODO: This method interceptor should inspect the called method to see if it is a profiled
+        //       method. For profiled methods, the interceptor should record the start time, then
+        //       invoke the method using the object that is being profiled. Finally, for profiled
+        //       methods, the interceptor should record how long the method call took, using the
+        //       ProfilingState methods.
+        Object result;
+        Instant startT= null;
+        boolean isProfiled = isMethodProfiled(method);
 
-  }
+        if (isProfiled){
+             startT = clock.instant();
+        }
+        try {
+            result = method.invoke(delegate,args);
+        }catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        } finally {
+            if (isProfiled){
+                Duration duration = Duration.between(startT, clock.instant());
+                state.record(delegate.getClass(), method, duration);
+            }
+        }
+        return result;
+
+
+    }
 }

@@ -27,7 +27,7 @@ final class ProfilerImpl implements Profiler {
     this.clock = Objects.requireNonNull(clock);
     this.startTime = ZonedDateTime.now(clock);
   }
-  boolean isProfiled(Class<?> klass){
+  private boolean isProfiled(Class<?> klass){
     Method[] methods = klass.getDeclaredMethods();
     if (methods.length == 0) return false;
     for (Method method:methods){
@@ -39,7 +39,7 @@ final class ProfilerImpl implements Profiler {
   }
 
   @Override
-  public <T> T wrap(Class<T> klass, T delegate)  {
+  public <T> T wrap(Class<T> klass, T delegate) throws IllegalArgumentException{
     Objects.requireNonNull(klass);
 
     // TODO: Use a dynamic proxy (java.lang.reflect.Proxy) to "wrap" the delegate in a
@@ -59,7 +59,7 @@ final class ProfilerImpl implements Profiler {
   }
 
   @Override
-  public void writeData(Path path) throws IOException{
+  public void writeData(Path path) {
     // TODO: Write the ProfilingState data to the given file path. If a file already exists at that
     //       path, the new data should be appended to the existing file.
     try (Writer writer = Files.newBufferedWriter(path)) {
